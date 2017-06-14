@@ -1,0 +1,40 @@
+---
+# File: roles/dataloggers/tasks/main.yml
+#
+# Brief: This role manages dac_iot service account
+#
+# Author: Patrick Paul
+#
+# Inst. de technologie de l'information / Institute for Information Technology
+# Conseil national de recherches Canada / National Research Council Canada
+# Copyright 2017, Sa Majeste la Reine du Chef du Canada /
+# Copyright 2017, Her Majesty in Right of Canada
+
+- name: Make sure some directories exists
+  file: path="{{item}}" state=directory owner=pi group=pi mode="u=rwx,g=rwx,o=rx"
+  become: true
+  with_items:
+    - "{{dac_iot_root}}"
+
+- name: insert/update boot time kernel module loading
+  blockinfile:
+    path: "{{dac_iot_root}}/modules"
+    #path: "/etc/modules"
+    marker: "##### {mark} ANSIBLE MANAGED BLOCK #####"
+    insertafter: EOF
+    content: |
+      w1-gpio pullup=1
+      w1-therm
+  become: true
+
+- name: insert/update one wire configuration to config.txt
+  blockinfile:
+    path: "{{dac_iot_root}}/config.txt"
+    #path: "/boot/config.txt"
+    marker: "##### {mark} ANSIBLE MANAGED BLOCK #####"
+    insertafter: EOF
+    content: |
+      dtoverlay=w1-gpio
+      dtoverlay=lirc-rpi:gpio_in_pin=16,gpio_out_pin=20
+  become: true
+   

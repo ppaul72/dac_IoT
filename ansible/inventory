@@ -1,0 +1,10 @@
+[dataloggers]
+ictm50rpi01
+#ictm50rpi02
+#ictm50rpi03
+#ictm50rpi04
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=pi
+

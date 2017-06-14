@@ -1,0 +1,19 @@
+---
+# File: dataloggers.yml
+#
+# Brief: This role ...
+#
+# Author: Patrick Paul
+#
+# Inst. de technologie de l'information / Institute for Information Technology
+# Conseil national de recherches Canada / National Research Council Canada
+# Copyright 2017, Sa Majeste la Reine du Chef du Canada /
+# Copyright 2017, Her Majesty in Right of Canada
+
+- hosts: dataloggers
+  name: Manages dataloggers configuration
+
+  roles:
+    - dataloggers
+  tags: dataloggers
+
