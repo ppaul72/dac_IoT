@@ -16,6 +16,12 @@
   with_items:
     - "{{dac_iot_root}}"
 
+#- name: Installing prerequisites 
+#  apt: name={{item}}
+#  with_items: 
+#    - wget
+#  become: true
+
 - name: insert/update boot time kernel module loading
   blockinfile:
     path: "{{dac_iot_root}}/modules"
