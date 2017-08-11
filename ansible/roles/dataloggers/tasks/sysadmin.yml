@@ -1,0 +1,64 @@
+---
+
+- name: Make sure some directories exists
+  file: path="{{item}}" state=directory owner=pi group=pi mode="u=rwx,g=rwx,o=rx"
+  with_items:
+    - "{{dac_iot_root}}"
+
+#hash generated using
+#python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"
+- name: reset root passwd
+  user: name=pi update_password=always password=$6$rounds=100000$qeuHJHpu2V8d3mZa$4sAzWEs9gTSjkaytMFU5Ooj/jBZSMQw/qwEBcihwPXG724NCTexpiyXQ6w26RyUPKIMRbneqPaHEXAmQ8Hws/1
+  #user: name=pi update_password=always password=$6$rounds=100000$VEd8tb/U3FC2gTh5$kZDeISA1rr4A1IUctJC7hG8R9P7qLQaLWx2iqXd2awzT.3RvjviRwVL6/sLVlnlLnJUCy7NeNOLRzugb7a8VI1
+  tags: root_pw
+
+- name: Installing prerequisites 
+  apt: name={{item}}
+  with_items: 
+    - ntpdate
+
+- name: Generating locale
+  locale_gen:
+    name: en_CA.UTF-8
+    state: present
+
+- name: set locale
+  command: "/usr/sbin/update-locale LANG={{ locale }}"
+
+- name: set timezone
+  file: src=/usr/share/zoneinfo/{{ timezone }} dest=/etc/localtime state=link force=yes
+  notify: update tzdata
+
+- name: setting up ntp
+  template:
+    src=ntp.conf.j2
+    dest=/etc/ntp.conf
+
+- name: install cron job
+  cron:
+    name: "DAC_IOT collectData"
+    minute: "*/10"
+    user: pi
+    job: "timeout 300 /usr/bin/python /home/pi/collectData.py"
+
+- name: insert/update boot time kernel module loading
+  blockinfile:
+    path: "{{dac_iot_root}}/modules"
+    #path: "/etc/modules"
+    marker: "##### {mark} ANSIBLE MANAGED BLOCK #####"
+    insertafter: EOF
+    state: absent
+    content: |
+      w1-gpio pullup=1
+      w1-therm
+
+- name: insert/update one wire configuration to config.txt
+  blockinfile:
+    path: "{{dac_iot_root}}/config.txt"
+    #path: "/boot/config.txt"
+    marker: "##### {mark} ANSIBLE MANAGED BLOCK #####"
+    insertafter: EOF
+    content: |
+      dtoverlay=w1-gpio
+   
+

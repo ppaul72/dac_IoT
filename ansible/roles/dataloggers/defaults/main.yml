@@ -2,3 +2,7 @@
 
 dac_iot_root: /opt/dac_iot
 
+locale: en_CA.UTF-8
+timezone: America/Montreal
+
+ntp_server: time.nrc.ca
