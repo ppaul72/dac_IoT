@@ -34,28 +34,28 @@
     src=ntp.conf.j2
     dest=/etc/ntp.conf
 
+- name: Automatic ntp time
+  command: timedatectl set-ntp yes
+
 - name: install cron job
   cron:
     name: "DAC_IOT collectData"
     minute: "*/10"
     user: pi
-    job: "timeout 300 /usr/bin/python /home/pi/collectData.py"
+    job: "timeout 300 /usr/bin/python {{ dac_iot_root }}/collectData.py"
 
 - name: insert/update boot time kernel module loading
   blockinfile:
-    path: "{{dac_iot_root}}/modules"
-    #path: "/etc/modules"
+    path: "/etc/modules"
     marker: "##### {mark} ANSIBLE MANAGED BLOCK #####"
     insertafter: EOF
-    state: absent
     content: |
       w1-gpio pullup=1
       w1-therm
 
 - name: insert/update one wire configuration to config.txt
   blockinfile:
-    path: "{{dac_iot_root}}/config.txt"
-    #path: "/boot/config.txt"
+    path: "/boot/config.txt"
     marker: "##### {mark} ANSIBLE MANAGED BLOCK #####"
     insertafter: EOF
     content: |

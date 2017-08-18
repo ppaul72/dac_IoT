@@ -1,0 +1,57 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+########################
+# Author: Eric Culf    #
+# Summer 2017	       #
+# Created for the NRC  #
+########################
+
+##Editable Pi Metadata##
+piid = {{ piid }}
+seid = 0
+lcid = {{ locid }}
+##==Setup by Ansible==##
+
+import os, glob, time, subprocess
+import MySQLdb as mdb
+
+# Get sensor directory (first if multiple sensors on same wire) 
+base_dir = '/sys/bus/w1/devices/'
+device_folder = glob.glob(base_dir + '28*')[0]
+device_file = device_folder + '/w1_slave'
+
+def read_temp_raw(): #function to get the device file's text
+    f = open(device_file, 'r')
+    lines = f.readlines()
+    f.close()
+    return lines
+ 
+def read_temp(): #function to get the temperature reading from the text
+    lines = read_temp_raw()
+    # Check whether the data was actually collected and try again if not
+    while lines[0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    # Find and return temperature
+    equals_pos = lines[1].find('t=')
+    if equals_pos != -1:
+        temp_string = lines[1][equals_pos+2:]
+        temp_c = float(temp_string) / 1000.0
+        return temp_c
+
+# Get date to upload
+date = subprocess.check_output(["date", "+%Y/%m/%d %H:%M:%S"]).strip()
+
+# Send data to database
+try:
+    pi_temp = read_temp()
+    con = mdb.connect(host="132.246.129.47", user="dac_iot_publisher", passwd="1ErT14RDS0f6", db="dac_iot", port=6603)
+    cur = con.cursor()
+    cur.execute("INSERT INTO datalog(datetime, pi_id, sensor_id, loc_id, value) VALUES('%s', '%s', '%s', '%s', '%s')" % (date, piid, seid, lcid, pi_temp))
+    con.commit()
+    
+except mdb.Error, e:
+    print "Error %d: %s" % (e.args[0],e.args[1])
+
+con.close()

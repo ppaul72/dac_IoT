@@ -1,8 +1,9 @@
 [dataloggers]
-ictm50rpi01
-#ictm50rpi02
-#ictm50rpi03
-#ictm50rpi04
+#ictm50rpi01 piid=0 locid=0
+#ictm50rpi02 piid=1 locid=1
+#ictm50rpi03 piid=2 locid=2
+#ictm50rpi04 piid=3 locid=3
+ictm50rpi05 piid=4 locid=4
 
 [all:vars]
 ansible_connection=ssh

@@ -1,6 +1,8 @@
 ---
 
-- name: Fake task
-  debug: msg="Hello World!"
-
-   
+- name: set up the data collection script
+  template:
+    src=collectData.py.j2
+    dest="{{dac_iot_root}}/collectData.py"
+  
+...
